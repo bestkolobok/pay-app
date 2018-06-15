@@ -4,7 +4,7 @@
         dark app dense prominent
     >
         <v-toolbar-title>
-            <span class="toolbar-title__text">Regions charts</span>
+            <span class="toolbar-title__text">Pay app</span>
         </v-toolbar-title>
     </v-toolbar>
 </template>
