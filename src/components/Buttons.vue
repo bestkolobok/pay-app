@@ -3,19 +3,19 @@
     <v-container grid-list-md>
         <v-layout row wrap justify-center>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="success" block @click.native="start">START</v-btn>
+                <v-btn color="accent" block @click.native="start">SORT</v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="success" block @click.native="revert">REVERT</v-btn>
+                <v-btn color="accent" block @click.native="revert">REVERT</v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="success" block @click.native="random">RANDOM</v-btn>
+                <v-btn color="accent" block @click.native="random">RANDOM</v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="success" block @click.native="pushServer">Push to serv</v-btn>
+                <v-btn color="accent" block @click.native="pushServer">Push to serv</v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="success" block @click.native="getServer">Get from serv</v-btn>
+                <v-btn color="accent" block @click.native="getServer">Get from serv</v-btn>
             </v-flex>
         </v-layout>
     </v-container>
