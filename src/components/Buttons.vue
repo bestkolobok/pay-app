@@ -12,10 +12,32 @@
                 <v-btn color="accent" block @click.native="random">RANDOM</v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="accent" block @click.native="pushServer">Push to serv</v-btn>
+                <v-btn
+                    :loading="pushing"
+                    :disabled="pushing"
+                    color="secondary"
+                    block
+                    @click.native="pushServer"
+                >
+                    Push to serv
+                    <span slot="pushing" class="custom-loader">
+                        <v-icon light>cached</v-icon>
+                    </span>
+                </v-btn>
             </v-flex>
             <v-flex class="offset-1 text-xs-center" xs2>
-                <v-btn color="accent" block @click.native="getServer">Get from serv</v-btn>
+                <v-btn
+                    :loading="geting"
+                    :disabled="geting"
+                    color="secondary"
+                    block
+                    @click.native="getServer"
+                >
+                    Get from serv
+                    <span slot="geting" class="custom-loader">
+                        <v-icon light>cached</v-icon>
+                    </span>
+                </v-btn>
             </v-flex>
         </v-layout>
     </v-container>
@@ -23,12 +45,12 @@
 </template>
 
 <script>
-import {HTTP} from '@/common/http.js'
 export default {
     name: 'Buttons',
     data () {
         return {
-            
+            pushing: false, 
+            geting: false
         }
     },
     methods: {
@@ -42,19 +64,38 @@ export default {
             this.$eventHub.$emit('random-sort')
         },
         pushServer(){
-
+            this.pushing = true
+            firebase.database().ref('data/first_data').set({
+               base: this.$eventHub.base
+            })
+            .then(() => this.pushing = false)
+            .catch(error => console.log (error))
         },
         getServer(){
-
-        }
-           
-    }, 
-    mounted(){
-        
+            this.geting = true
+            firebase.database().ref('/data/first_data').once('value')
+            .then(data => {
+                this.$eventHub.base = data.val().base
+                this.$eventHub.$emit('server-get')
+                this.geting = false
+            })
+            .catch(error => console.log (error))
+        }   
     }
 }
 </script>
 
 <style lang="scss" scoped>
-   
+   .custom-loader {
+    animation: loader 1s infinite;
+    display: flex;
+  }
+  @keyframes loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 </style>

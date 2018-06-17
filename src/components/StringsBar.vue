@@ -1,5 +1,18 @@
 <template>
     <div class="conteiner">
+        <v-container class="input" grid-list-md text-xs-center>
+            <v-layout row wrap>
+                <v-flex xs12 align-center d-flex>
+                    <v-text-field 
+                        v-model="inputValue" 
+                        @keyup.enter="addString" 
+                        label="input new string" 
+                        :rules="[rules.string]" 
+                        max="40"
+                    ></v-text-field>
+                </v-flex>
+            </v-layout>
+        </v-container>   
         <v-container class="strings" grid-list-md text-xs-center>
             <v-layout row wrap v-for="(item, index) in base" :key="index">
                 <v-flex xs1 align-center d-flex>
@@ -18,7 +31,7 @@
                     <span>cons {{item.consonants}}</span>
                 </v-flex>
                 <v-flex xs1>
-                    <v-btn flat icon color="primary">
+                    <v-btn flat icon color="primary" @click="deleteString(index)">
                         <v-icon>close</v-icon>
                     </v-btn>
                 </v-flex>
@@ -28,15 +41,19 @@
 </template>
 
 <script>
-import {HTTP} from '@/common/http.js'
-
 export default {
     name: 'StringsBar',
     data () {
         return {
+            inputValue: '',
+            rules: {
+                string: (value) => {
+                    const pattern = /^[a-z]{3,40}$/
+                    return pattern.test(value) || 'Invalid string'
+                },
+            },
             alphabet: {
                 vowels: ['a', 'e', 'i', 'o', 'u', 'y'],
-                consonants: ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'z']
             },
             base: [
                 {string: 'ajhutrvmmfhmgmfghmhoiow', oldString:'', length:'', vowels:'', consonants:''},
@@ -49,7 +66,7 @@ export default {
     methods: {
         revertStateSet(){
             this.base.forEach(data => {
-                data.oldString = data.string
+                data.oldString = data.oldString === '' ? data.string : data.oldString
             })
         },
         calcState(){
@@ -67,35 +84,17 @@ export default {
                 })
             })
         },
-        satrtSort(){
+        sort(){
             let endVowel = []
             this.base.forEach(data => {
-                // data.oldString = data.string
                 let stringArr = data.string.split('')
                 let sortStringArr = []
                 if(endVowel.length > 0 ){endVowel.forEach(vowel => {stringArr.unshift(vowel)})}
                 let oldLetter = null
-                // stringArr.forEach((letter, index, arr) => {
-                //     if(
-                //         index === 0 || 
-                //         this.alphabet.vowels.includes(letter) || 
-                //         (!this.alphabet.vowels.includes(letter) && this.alphabet.vowels.includes(oldLetter)) ||
-                //         (this.alphabet.vowels.includes(letter) && !this.alphabet.vowels.includes(oldLetter) && oldLetter !== null)
-                //     ){
-                //         sortStringArr.push(letter)
-                //     }else{
-                //         arr.push(letter)
-                //         // console.log(stringArr)
-                //     }
-                //     oldLetter = letter
-                // })
-
-
                 for(let i = 0, state = true; state; i += 1) {
                     const letter = stringArr[i]
                     if(
                         i === 0 || 
-                        // this.alphabet.vowels.includes(letter) || 
                         (!this.alphabet.vowels.includes(letter) && this.alphabet.vowels.includes(oldLetter)) || 
                         (this.alphabet.vowels.includes(letter) && !this.alphabet.vowels.includes(oldLetter) && oldLetter !== null)
                     ){
@@ -125,14 +124,13 @@ export default {
                 while(this.alphabet.vowels.includes(sortStringArr[sortStringArr.length-1])){
                     endVowel.push(sortStringArr.pop())
                 }
-                // endVowel = this.alphabet.vowels.includes(sortStringArr[sortStringArr.length-1]) ? sortStringArr.pop() : null
                 data.string = sortStringArr.join('')
             })
             this.calcState()
         },
         revertSort(){
             this.base.forEach(data => {
-                data.string = data.oldString
+                data.string = data.oldString !== '' ? data.oldString : data.string
             })
             this.calcState()
         },
@@ -145,26 +143,51 @@ export default {
                     randomString += String.fromCharCode(randomCode)
                 }
                 data.string = randomString
-                // 97 122
             })
             this.calcState()
+        },
+        getFromServ(){
+            this.base = this.$eventHub.base
+        },
+        addString(){
+            this.base.unshift({string: this.inputValue, oldString:'', length:'', vowels:'', consonants:''})
+            this.inputValue = null
+            this.revertStateSet()
+            this.calcState()  
+        },
+        deleteString(index){
+            const newBase = []
+            this.base.forEach((data, i) => {
+                if(i !== index){newBase.push(data)}
+            })
+            this.base = newBase
         }
     },
     mounted(){
         this.revertStateSet()
         this.calcState()
-        this.$eventHub.$on('start-sort', this.satrtSort)
+        this.$eventHub.$on('start-sort', this.sort)
         this.$eventHub.$on('revert-sort', this.revertSort)
         this.$eventHub.$on('random-sort', this.randomSort)
-    } 
+        this.$eventHub.$on('server-get', this.getFromServ)
+    },
+    watch: {
+        base: {
+            handler(newState){
+                this.$eventHub.base = newState
+            },
+            deep: true
+        }
+    }
 }
 </script>
 
 <style lang="scss" scoped>
     .conteiner{
         margin-top: 30px;
-        height: 60vh;
         .strings{
+            height: 50vh;
+            overflow-y: auto;
             &__bullet{
                 color: #d54747;
             }
