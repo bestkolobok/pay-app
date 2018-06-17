@@ -87,7 +87,7 @@ Vue.prototype.$eventHub = new Vue()
 
 new Vue({
     el: '#app',
-    router,
+    // router,
     components: { App },
     template: '<App/>',
     data: {
